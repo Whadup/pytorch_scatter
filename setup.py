@@ -47,7 +47,9 @@ class MyExtension2(build_ext):
         self.KWARGS = kwargs
     def __getattribute__(self, x):
         print(x)
-        if x in ("ARGS", "KWARGS", "initialize_options", "ensure_finalized", "__dict__", "finalized", "finalize_options", "set_undefined_options"):
+        if x in ("ARGS", "KWARGS", 
+        "initialize_options", "ensure_finalized", "__dict__", "finalized",
+        "finalize_options", "set_undefined_options", "distribution"):
             return super(MyExtension2, self).__getattribute__(x)
         try:
             from torch.utils.cpp_extension import BuildExtension
