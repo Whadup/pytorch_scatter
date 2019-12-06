@@ -14,15 +14,21 @@ if (TORCH_MAJOR > 1) or (TORCH_MAJOR == 1 and TORCH_MINOR > 2):
     extra_compile_args += ['-DVERSION_GE_1_3']
 
 def ext_modules_lazy():
-    from torch.utils.cpp_extension import CppExtension
-    yield CppExtension('torch_scatter.scatter_cpu', ['cpu/scatter.cpp'],
+    try:
+        from torch.utils.cpp_extension import CppExtension
+        yield CppExtension('torch_scatter.scatter_cpu', ['cpu/scatter.cpp'],
                  extra_compile_args=extra_compile_args)
+    except:
+        pass
 
 def cmd_class_lazy():
-    import torch
-    yield 'build_ext', torch.utils.cpp_extension.BuildExtension
+    yield "dummy", ""
+    try:
+        import torch
+        yield 'build_ext', torch.utils.cpp_extension.BuildExtension
+    except:
+        pass
 
-cmdclass = {x:y for x,y in cmd_class_lazy()}
 
 GPU = False
 
@@ -30,10 +36,10 @@ __version__ = '1.4.0'
 url = 'https://github.com/rusty1s/pytorch_scatter'
 
 install_requires = ['torch']
-setup_requires = ['torch', 'pytest-runner']
+setup_requires = ['pytest-runner']
 tests_require = ['pytest', 'pytest-cov']
 
-setup(
+print(setup(
     name='torch_scatter',
     version=__version__,
     description='PyTorch Extension Library of Optimized Scatter Operations',
@@ -48,7 +54,7 @@ setup(
     install_requires=install_requires,
     setup_requires=setup_requires,
     tests_require=tests_require,
-    ext_modules=ext_modules_lazy,
-    cmdclass=cmdclass,
+    ext_modules=list(ext_modules_lazy()),
+    cmdclass={x:y for x, y in cmd_class_lazy()},
     packages=find_packages(),
-)
+))
