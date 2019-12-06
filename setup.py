@@ -12,12 +12,23 @@ if platform.system() != 'Windows':
 
 if (TORCH_MAJOR > 1) or (TORCH_MAJOR == 1 and TORCH_MINOR > 2):
     extra_compile_args += ['-DVERSION_GE_1_3']
+
+
+def ext_modules_lazy():
+    # from torch.utils.cpp_extension import CppExtension
+    yield MyExtension('torch_scatter.scatter_cpu', ['cpu/scatter.cpp'],
+        extra_compile_args=extra_compile_args)
+    #'torch_scatter.scatter_cpu', ['cpu/scatter.cpp'],
+    #        
+
+
 class MyExtension(setuptools.extension.Extension):
     def __init__(self, *args, **kwargs):
         super(MyExtension, self).__init__(*args, **kwargs)
         self.ARGS = args
         self.KWARGS = kwargs
     def __getattribute__(self, x):
+        print(x)
         if x in ("ARGS", "KWARGS", "_convert_pyx_sources_to_lang"):
             return super(MyExtension, self).__getattribute__(x)
         try:
@@ -28,21 +39,28 @@ class MyExtension(setuptools.extension.Extension):
             return CppExtension(*self.ARGS, **self.KWARGS).__getattribute__(x)
         except:
             return ""
-
-def ext_modules_lazy():
-    # from torch.utils.cpp_extension import CppExtension
-    yield MyExtension('torch_scatter.scatter_cpu', ['cpu/scatter.cpp'],
-        extra_compile_args=extra_compile_args)
-    #'torch_scatter.scatter_cpu', ['cpu/scatter.cpp'],
-    #        
+from setuptools.command.build_ext import build_ext
+class MyExtension2(build_ext):
+    def __init__(self, *args, **kwargs):
+        super(MyExtension2, self).__init__(*args, **kwargs)
+        self.ARGS = args
+        self.KWARGS = kwargs
+    def __getattribute__(self, x):
+        print(x)
+        if x in ("ARGS", "KWARGS", "initialize_options", "__dict__"):
+            return super(MyExtension2, self).__getattribute__(x)
+        try:
+            from torch.utils.cpp_extension import BuildExtension
+        except:
+            return ""
+        try:
+            return BuildExtension(*self.ARGS, **self.KWARGS).__getattribute__(x)
+        except:
+            return ""
 
 def cmd_class_lazy():
-    yield "dummy", ""
-    try:
-        import torch
-        yield 'build_ext', torch.utils.cpp_extension.BuildExtension
-    except:
-        pass
+    yield 'build_ext', MyExtension2
+
 
 
 GPU = False
