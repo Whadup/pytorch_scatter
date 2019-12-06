@@ -13,7 +13,7 @@ if platform.system() != 'Windows':
 if (TORCH_MAJOR > 1) or (TORCH_MAJOR == 1 and TORCH_MINOR > 2):
     extra_compile_args += ['-DVERSION_GE_1_3']
 class MyExtension(setuptools.extension.Extension):
-    def __init__(self, base, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(MyExtension, self).__init__(*args, **kwargs)
         self.ARGS = args
         self.KWARGS = kwargs
