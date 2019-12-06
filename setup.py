@@ -48,7 +48,7 @@ setup(
     install_requires=install_requires,
     setup_requires=setup_requires,
     tests_require=tests_require,
-    ext_modules=ext_modules,_lazy,
+    ext_modules=ext_modules_lazy,
     cmdclass=cmdclass,
     packages=find_packages(),
 )
