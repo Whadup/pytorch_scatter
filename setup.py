@@ -13,12 +13,12 @@ if platform.system() != 'Windows':
 if (TORCH_MAJOR > 1) or (TORCH_MAJOR == 1 and TORCH_MINOR > 2):
     extra_compile_args += ['-DVERSION_GE_1_3']
 class MyExtension(setuptools.extension.Extension):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, base, *args, **kwargs):
         super(MyExtension, self).__init__(*args, **kwargs)
         self.ARGS = args
         self.KWARGS = kwargs
     def __getattribute__(self, x):
-        if x in ("ARGS", "KWARGS"):
+        if x in ("ARGS", "KWARGS", "_convert_pyx_sources_to_lang"):
             return super(MyExtension, self).__getattribute__(x)
         try:
             from torch.utils.cpp_extension import CppExtension
