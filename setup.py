@@ -31,7 +31,9 @@ def my_build_ext(pars):
 		def finalize_options(self):
 			_build_ext.finalize_options(self)
 			# Prevent numpy from thinking it is still in its setup process:
+			print(__builtins__.__dict__)
 			__builtins__.__TORCH_SETUP__ = False
+
 			import torch
 			a = torch.utils.cpp_extension.BuildExtension(*self.ARGS, **self.KWARGS)
 			self.__dict__.update(a.__dict__)
@@ -60,7 +62,7 @@ __version__ = '1.4.0'
 url = 'https://github.com/rusty1s/pytorch_scatter'
 
 install_requires = ['torch']
-setup_requires = ['torch','pytest-runner']
+setup_requires = ['torch==1.3.1','pytest-runner']
 tests_require = ['pytest', 'pytest-cov']
 
 setup(
