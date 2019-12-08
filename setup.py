@@ -50,7 +50,7 @@ def my_build_ext(pars):
 			from torch.utils.cpp_extension import CppExtension
 			b = CppExtension('torch_scatter.scatter_cpu', ['cpu/scatter.cpp'],
 				extra_compile_args=extra_compile_args)
-			self.include_dirs = b.include_dirs
+			self.include_dirs += b.include_dirs
 			self.language = b.language
 			pprint.pprint(self.__dict__)
 
