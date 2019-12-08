@@ -46,7 +46,7 @@ def my_build_ext(pars):
 			a = torch.utils.cpp_extension.BuildExtension(*self.ARGS, **self.KWARGS)
 			# self.__dict__.update(a.__dict__)
 			# self.extensions = extensions
-			pprint.pprint(self.__dict__)
+			pprint.pprint(a.__dict__)
 			from torch.utils.cpp_extension import CppExtension
 			b = CppExtension('torch_scatter.scatter_cpu', ['cpu/scatter.cpp'],
 				extra_compile_args=extra_compile_args)
