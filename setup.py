@@ -9,28 +9,48 @@ TORCH_MINOR = int(torch.__version__.split('.')[1])
 
 extra_compile_args = []
 if platform.system() != 'Windows':
-    extra_compile_args += ['-Wno-unused-variable']
+	extra_compile_args += ['-Wno-unused-variable']
 
 if (TORCH_MAJOR > 1) or (TORCH_MAJOR == 1 and TORCH_MINOR > 2):
-    extra_compile_args += ['-DVERSION_GE_1_3']
+	extra_compile_args += ['-DVERSION_GE_1_3']
 
 ext_modules = [
-    CppExtension('torch_scatter.scatter_cpu', ['cpu/scatter.cpp'],
-                 extra_compile_args=extra_compile_args)
+	CppExtension('torch_scatter.scatter_cpu', ['cpu/scatter.cpp'],
+				 extra_compile_args=extra_compile_args)
 ]
-cmdclass = {'build_ext': torch.utils.cpp_extension.BuildExtension}
+
+
+
+def my_build_ext(pars):
+     # import delayed:
+     from setuptools.command.build_ext import build_ext as _build_ext#
+
+     # include_dirs adjusted: 
+     class build_ext(_build_ext):
+         def finalize_options(self):
+             _build_ext.finalize_options(self)
+             # Prevent numpy from thinking it is still in its setup process:
+             __builtins__.__TORCH_SETUP__ = False
+             import torch
+			 a = torch.utils.cpp_extension.BuildExtension()
+			 self.__dict__.update(a.__dict__)
+
+    #object returned:
+    return build_ext(pars)
+
+cmdclass = {'build_ext': my_build_ext()}
 
 GPU = True
 for arg in argv:
-    if arg == '--cpu':
-        GPU = False
-        argv.remove(arg)
+	if arg == '--cpu':
+		GPU = False
+		argv.remove(arg)
 
 if CUDA_HOME is not None and GPU:
-    ext_modules += [
-        CUDAExtension('torch_scatter.scatter_cuda',
-                      ['cuda/scatter.cpp', 'cuda/scatter_kernel.cu'])
-    ]
+	ext_modules += [
+		CUDAExtension('torch_scatter.scatter_cuda',
+					  ['cuda/scatter.cpp', 'cuda/scatter_kernel.cu'])
+	]
 
 __version__ = '1.4.0'
 url = 'https://github.com/rusty1s/pytorch_scatter'
@@ -40,21 +60,21 @@ setup_requires = ['torch', 'pytest-runner']
 tests_require = ['pytest', 'pytest-cov']
 
 setup(
-    name='torch_scatter',
-    version=__version__,
-    description='PyTorch Extension Library of Optimized Scatter Operations',
-    author='Matthias Fey',
-    author_email='matthias.fey@tu-dortmund.de',
-    url=url,
-    download_url='{}/archive/{}.tar.gz'.format(url, __version__),
-    keywords=[
-        'pytorch',
-        'scatter',
-    ],
-    install_requires=install_requires,
-    setup_requires=setup_requires,
-    tests_require=tests_require,
-    ext_modules=ext_modules,
-    cmdclass=cmdclass,
-    packages=find_packages(),
+	name='torch_scatter',
+	version=__version__,
+	description='PyTorch Extension Library of Optimized Scatter Operations',
+	author='Matthias Fey',
+	author_email='matthias.fey@tu-dortmund.de',
+	url=url,
+	download_url='{}/archive/{}.tar.gz'.format(url, __version__),
+	keywords=[
+		'pytorch',
+		'scatter',
+	],
+	install_requires=install_requires,
+	setup_requires=setup_requires,
+	tests_require=tests_require,
+	ext_modules=ext_modules,
+	cmdclass=cmdclass,
+	packages=find_packages(),
 )
