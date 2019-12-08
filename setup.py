@@ -1,10 +1,12 @@
 import platform
 from setuptools import setup, find_packages
 from sys import argv
+
+
 import setuptools
 TORCH_MAJOR = 1
 TORCH_MINOR = 3
-
+import pprint
 extra_compile_args = []
 if platform.system() != 'Windows':
 	extra_compile_args += ['-Wno-unused-variable']
@@ -30,18 +32,28 @@ def my_build_ext(pars):
 			super().__init__(*args, **kwargs)
 		def finalize_options(self):
 			_build_ext.finalize_options(self)
+			pprint.pprint(self.__dict__)
 			# Prevent numpy from thinking it is still in its setup process:
-			print(__builtins__.__dict__)
+			# print(__builtins__.__dict__)
 			__builtins__.__TORCH_SETUP__ = False
 
-			import torch
+			import torch.utils.cpp_extension
+			import importlib
+			importlib.reload(torch)
+			# print(torch.utils.cpp_extension)
+			# print(dir(torch.utils))
+			extensions = self.extensions
 			a = torch.utils.cpp_extension.BuildExtension(*self.ARGS, **self.KWARGS)
-			self.__dict__.update(a.__dict__)
+			# self.__dict__.update(a.__dict__)
+			# self.extensions = extensions
+			pprint.pprint(self.__dict__)
 			from torch.utils.cpp_extension import CppExtension
 			b = CppExtension('torch_scatter.scatter_cpu', ['cpu/scatter.cpp'],
 				extra_compile_args=extra_compile_args)
 			self.include_dirs = b.include_dirs
 			self.language = b.language
+			pprint.pprint(self.__dict__)
+
 	return build_ext(pars)
 
 cmdclass = {'build_ext': my_build_ext}
@@ -62,9 +74,9 @@ __version__ = '1.4.0'
 url = 'https://github.com/rusty1s/pytorch_scatter'
 
 install_requires = ['torch']
-setup_requires = ['torch==1.3.1','pytest-runner']
+setup_requires = ['torch==1.3.1', 'pytest-runner']
 tests_require = ['pytest', 'pytest-cov']
-
+print(ext_modules)
 setup(
 	name='torch_scatter',
 	version=__version__,
